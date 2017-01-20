@@ -11,16 +11,21 @@ class MazeGame(object):
         start is position of begining , e.g. [1,1]
         end is position of goal, e.g. [10,10].
 
-        When start or end is outside of maze, exception occur
+        When start or end is outside of maze or in the wall, throw exception
         """
         assert data.dtype == bool
         
         self.data = data
         
+        "Start and end have to be inside of maze"
         if (start[0]<0) or (start[0]>=self.getSize()[0]) or (start[1]<0) or (start[1]>=self.getSize()[1]):
             raise MazeError("Start position is out of maze")
         if (end[0]<0) or (end[0]>=self.getSize()[0]) or (end[1]<0) or (end[1]>=self.getSize()[1]):
             raise MazeError("End position is out of maze")
+        if not self.isFree(start[0], start[1]):
+            raise MazeError("There is a wall at start position!")
+        if not self.isFree(end[0], end[1]):
+            raise MazeError("There is a wall at end position!")
         
         self.start = start
         self.end = end
@@ -37,14 +42,16 @@ class MazeGame(object):
         return self.end
 
     def isFree(self, x, y):
-        """Return False when there is a wall on position x,y. Else return True.
-           Negative indexes are ignored. """
+        """Return False when there is a wall on position x,y or position x,y is
+           outside of maze.
+           Else return True.
+           Negative indexes are ignored."""
         if (x<0) or (x>=self.getSize()[0]) or (y<0) or (y>=self.getSize()[1]):
             return False
         return self.data[x,y]                    
 
     def getSolution(self):
-        "Return some shortest maze solution or an exception occure"
+        "Return some shortest maze solution or throw an exception"
         
         queue = deque([("b", self.start)])
         visited = set()
@@ -98,7 +105,7 @@ class MazeGame(object):
         input_data = input_data.transpose()
         
         if (len(input_data.shape)<2):
-            raise MazeError("Maze is not regular! Some row(s) has different length than others.")
+            raise MazeError("Maze is empty or not regular! (Some row(s) has different length than others.)")
         
         WIDTH = input_data.shape[0]
         HEIGHT = input_data.shape[1]
@@ -130,7 +137,6 @@ class MazeGame(object):
             raise MazeError("There is no start!")
         if end_count == 0:
             raise MazeError("There is no end!")
-        
         return MazeGame(data, start, end)
 
 class MazePath(object):
