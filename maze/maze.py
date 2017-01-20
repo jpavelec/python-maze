@@ -11,7 +11,6 @@ class MazeGame(object):
         start is position of begining , e.g. [1,1]
         end is position of goal, e.g. [10,10].
 
-        Pokud start nebo stop je mimo bludiste, vyvola vyjimku
         When start or end is outside of maze, exception occur
         """
         assert data.dtype == bool
@@ -38,7 +37,8 @@ class MazeGame(object):
         return self.end
 
     def isFree(self, x, y):
-        "Return False when there is a wall on position x,y. Else return True"
+        """Return False when there is a wall on position x,y. Else return True.
+           Negative indexes are ignored. """
         if (x<0) or (x>=self.getSize()[0]) or (y<0) or (y>=self.getSize()[1]):
             return False
         return self.data[x,y]                    
@@ -80,10 +80,7 @@ class MazeGame(object):
             if (self.isFree(current[0],current[1]-1)):
                 queue.append((path+"l", (current[0],current[1]-1)))
         
-        raise MazeError("There is not path from start to end!")
-              
-        
-        
+        raise MazeError("There is no path from start to end!")
 
     @staticmethod 
     def fromString(maze):
@@ -98,54 +95,54 @@ class MazeGame(object):
         # ... if line remove empty line
         input_data = [list(line) for line in lines if line]
         input_data = numpy.asarray(input_data)
+        input_data = input_data.transpose()
         
         if (len(input_data.shape)<2):
             raise MazeError("Maze is not regular! Some row(s) has different length than others.")
         
-        HEIGHT = input_data.shape[0]
-        WIDTH = input_data.shape[1]
+        WIDTH = input_data.shape[0]
+        HEIGHT = input_data.shape[1]
 
-        data = numpy.empty((HEIGHT,WIDTH),dtype=bool)
+        data = numpy.empty((WIDTH, HEIGHT),dtype=bool)
 
         start_count, end_count = 0, 0
 
-        for i in range(HEIGHT):
-            for j in range(WIDTH):
+        for i in range(WIDTH):
+            for j in range(HEIGHT):
                 if (input_data[i,j] == 'X') or (input_data[i,j] == '#'):
                     data[i,j] = False
                 elif input_data[i,j] == 'B':
                     if start_count>0:
-                        raise MazeError("Too many begins!")
+                        raise MazeError("There is more than one start!")
                     start_count += 1
                     start = (i,j)
                     data[i,j] = True
                 elif input_data[i,j] == 'E':
                     if end_count > 0:
-                        raise MazeError("Too many ends!")
+                        raise MazeError("There is more than one end!")
                     end_count += 1
                     end = (i,j)
                     data[i,j] = True
                 else:
                     data[i,j] = True
-                
-            
+                            
         if start_count == 0:
-            raise MazeError("There is no begin!")
+            raise MazeError("There is no start!")
         if end_count == 0:
             raise MazeError("There is no end!")
         
         return MazeGame(data, start, end)
 
 class MazePath(object):
-    "Objekt obsahujici cestu v bludisti"
+    "Object contains path in maze"
 
     def __init__(self, steps):
-        "Inicializuje objekt MazePath"
+        "Object MazePath init"
         self.steps = steps
         pass
 
     def length(self):
-        "Vraci delku cesty v bludisti"
+        "Return maze path length"
         return len(self.steps)
 
     def __iter__(self):
