@@ -54,8 +54,20 @@ class MazeGame(object):
                 """We found the end!
                    In variable path is string of directions how to get from start to end.
                    d = down, u = up, r = right, l = left"""
-                print(path)
-                break
+                path = path[1:]
+                current = self.start
+                steps = [current]
+                for c in path:
+                    if c == "d":
+                        current = (current[0]+1,current[1])        
+                    if c == "u":
+                        current = (current[0]-1,current[1])
+                    if c == "r":
+                        current = (current[0], current[1]+1)
+                    if c == "l":
+                        current = (current[0], current[1]-1)
+                    steps.append(current)
+                return MazePath(steps)
             if current in visited:
                 continue
             visited.add(current)
@@ -68,11 +80,10 @@ class MazeGame(object):
             if (self.isFree(current[0],current[1]-1)):
                 queue.append((path+"l", (current[0],current[1]-1)))
         
+        raise MazeError("There is not path from start to end!")
+              
         
         
-        
-        
-        return MazePath(steps=[])
 
     @staticmethod 
     def fromString(maze):
@@ -130,14 +141,13 @@ class MazePath(object):
 
     def __init__(self, steps):
         "Inicializuje objekt MazePath"
+        self.steps = steps
         pass
 
     def length(self):
         "Vraci delku cesty v bludisti"
-        return 0
+        return len(self.steps)
 
     def __iter__(self):
-        "Iterator vracejici jednotlive body cesty"
-        yield (0,0)
-        yield (0,1)
-        yield (1,1)
+        for s in self.steps:
+            yield s
