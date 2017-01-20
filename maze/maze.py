@@ -1,34 +1,34 @@
 # coding: utf-8 
-
+from .exceptions import MazeError
+from collections import deque
 import numpy
 
 class MazeGame(object):
 
     def __init__(self, data, start, end):
-        """Inicializuje bludiste
-        data je 2D matice , 
-        start je pozice zacatku, napr [1,1]
-        stop je pozice konce cile. napr. [10,10].
+        """Init maze
+        data is 2D matrix , 
+        start is position of begining , e.g. [1,1]
+        end is position of goal, e.g. [10,10].
 
         Pokud start nebo stop je mimo bludiste, vyvola vyjimku
+        When start or end is outside of maze, exception occur
         """
         assert data.dtype == bool
         
         self.data = data
         
-        if (start[0]<0) or (start[0]>self.getSize()[0]) or (start[1]<0) or (start[1]>self.getSize()[1]):
+        if (start[0]<0) or (start[0]>=self.getSize()[0]) or (start[1]<0) or (start[1]>=self.getSize()[1]):
             raise MazeError("Start position is out of maze")
-        if (end[0]<0) or (end[0]>self.getSize()[0]) or (end[1]<0) or (end[1]>self.getSize()[1]):
+        if (end[0]<0) or (end[0]>=self.getSize()[0]) or (end[1]<0) or (end[1]>=self.getSize()[1]):
             raise MazeError("End position is out of maze")
         
         self.start = start
         self.end = end
-        '''print(data)
-        print(start)
-        print(end)'''
+        
 
     def getSize(self):
-        "Vrati velikost bludiste"
+        "Return maze size"
         return self.data.shape
 
     def getStart(self):
@@ -38,11 +38,40 @@ class MazeGame(object):
         return self.end
 
     def isFree(self, x, y):
-        "Vrátí False jestli na pozici x,y chodba. Jinak vrací True"
-        return True                        
+        "Return False when there is a wall on position x,y. Else return True"
+        if (x<0) or (x>=self.getSize()[0]) or (y<0) or (y>=self.getSize()[1]):
+            return False
+        return self.data[x,y]                    
 
     def getSolution(self):
-        "Vrati nejake nejkratsi reseni bludiste nebo vyvola vyjimku"
+        "Return some shortest maze solution or an exception occure"
+        
+        queue = deque([("b", self.start)])
+        visited = set()
+        while queue:
+            path, current = queue.popleft()
+            if current == self.end:
+                """We found the end!
+                   In variable path is string of directions how to get from start to end.
+                   d = down, u = up, r = right, l = left"""
+                print(path)
+                break
+            if current in visited:
+                continue
+            visited.add(current)
+            if (self.isFree(current[0]+1,current[1])):
+                queue.append((path+"d", (current[0]+1,current[1])))
+            if (self.isFree(current[0]-1,current[1])):
+                queue.append((path+"u", (current[0]-1,current[1])))
+            if (self.isFree(current[0],current[1]+1)):
+                queue.append((path+"r", (current[0],current[1]+1)))
+            if (self.isFree(current[0],current[1]-1)):
+                queue.append((path+"l", (current[0],current[1]-1)))
+        
+        
+        
+        
+        
         return MazePath(steps=[])
 
     @staticmethod 
